@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KANADEMONO AR Test - Premium</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <style>
+        body { margin: 0; font-family: sans-serif; background-color: #f5f5f5; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* 3D表示エリア */
+        model-viewer { flex: 1; width: 100%; background-color: #e0e0e0; }
+        
+        /* 操作パネル */
+        .controls { padding: 20px; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 15px; }
+        .control-group { display: flex; align-items: center; justify-content: space-between; }
+        label { font-weight: bold; font-size: 14px; width: 120px; }
+        input[type="range"] { flex: 1; margin: 0 15px; }
+        .value-display { width: 60px; text-align: right; font-variant-numeric: tabular-nums; font-weight: bold; }
+        
+        /* ARボタン */
+        .ar-button { position: absolute; bottom: 180px; left: 50%; transform: translateX(-50%); padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <model-viewer 
+        id="table-model"
+        src="table.gltf"
+        ar 
+        ar-modes="webxr scene-viewer quick-look" 
+        camera-controls 
+        ar-placement="floor"
+        shadow-intensity="1">
+        <button slot="ar-button" class="ar-button">部屋に置く (AR)</button>
+    </model-viewer>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="width-slider">テーブルの幅</label>
+            <input type="range" id="width-slider" min="100" max="180" value="140" step="1">
+            <span class="value-display"><span id="width-val">140</span>cm</span>
+        </div>
+
+        <div class="control-group">
+            <label for="depth-slider">奥行き</label>
+            <input type="range" id="depth-slider" min="44" max="80" value="80" step="1">
+            <span class="value-display"><span id="depth-val">80</span>cm</span>
+        </div>
+        
+        <p style="margin: 0; font-size: 11px; color: #666;">※幅140cm / 奥行80cm を基準（1倍）として各軸が伸縮します</p>
+    </div>
+
+    <script>
+        const modelViewer = document.getElementById('table-model');
+        const widthSlider = document.getElementById('width-slider');
+        const widthVal = document.getElementById('width-val');
+        const depthSlider = document.getElementById('depth-slider');
+        const depthVal = document.getElementById('depth-val');
+
+        // ベースサイズ（現在の3Dモデルの元の寸法に合わせる必要があります）
+        const baseWidth = 140;
+        const baseDepth = 80;
+
+        function updateScale() {
+            const currentWidth = widthSlider.value;
+            const currentDepth = depthSlider.value;
+
+            widthVal.textContent = currentWidth;
+            depthVal.textContent = currentDepth;
+
+            // スケール値（倍率）の計算
+            const scaleX = currentWidth / baseWidth;   // 横幅の倍率
+            const scaleZ = currentDepth / baseDepth;   // 奥行きの倍率（3D空間ではZ軸が奥行きになります）
+            const scaleY = 1;                          // 高さは固定
+
+            // model-viewerに倍率を反映 (X Y Z の順番)
+            modelViewer.scale = `${scaleX} ${scaleY} ${scaleZ}`;
+        }
+
+        // 2つのスライダーそれぞれにイベントを設定
+        widthSlider.addEventListener('input', updateScale);
+        depthSlider.addEventListener('input', updateScale);
+        
+        // 初期化
+        window.addEventListener('load', updateScale);
+    </script>
+
+</body>
+</html>
